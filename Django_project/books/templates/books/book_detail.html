@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Детальна інформація про книгу</title>
+</head>
+<body>
+    <h2>{{ book.title }}</h2>
+    <p>Автор: {{ book.author }}</p>
+    <p>Ціна: {{ book.price }} </p>
+    <p>Категорія: {{ book.category }}</p>
+    <a href="{% url 'books:update' book.pk %}"> Редагування інформації про книгу </a>
+</body>
+</html>
