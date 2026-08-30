@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Додавання книги</title>
+</head>
+<body>
+    <h2>Додавання нової книги</h2>
+    <form method="POST">
+        {% csrf_token %}
+
+        {{ form }}
+
+        <button> Створити </button>
+    </form>
+</body>
+</html>

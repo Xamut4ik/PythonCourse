@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Оновлення інформації про книгу</title>
+</head>
+<body>
+    <h2>Оновлення інформації про книгу</h2>
+    <form method="POST">
+        {% csrf_token %}
+
+        {{ form }}
+
+        <button> Оновити інформацію </button>
+        <div> </div>
+    </form>
+
+    <form action="{% url 'books:delete' book.pk %}" method="POST" style="display:inline;">
+        {% csrf_token %}
+
+        <button type="submit" onclick="return confirm('Ви впевненні, що хочете видалити цю книгу?');"> Видалити </button>
+    </form>
+</body>
+</html>

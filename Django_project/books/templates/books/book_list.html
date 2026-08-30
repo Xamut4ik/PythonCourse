@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Книги</title>
+</head>
+<body>
+  <h1>Список книг</h1>
+  {% for book in books %}
+    <a href="{% url 'books:detail' book.pk %}">{{ book.title }}</a>
+  {% endfor %}
+  {% if is_paginated %}
+
+    <div>
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}">
+                Назад
+            </a>
+        {% endif %}
+
+        <span>
+            Сторінка {{ page_obj.number }} з {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">
+                Далі
+            </a>
+        {% endif %}
+    </div>
+
+  <form method="GET">
+      <input type="text" name="q" placeholder="Назва або автор">
+      <button type="submit">Пошук</button>
+  </form>
+{% endif %}
+</body>
+</html>
