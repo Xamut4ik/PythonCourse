@@ -1,17 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Додавання книги</title>
-</head>
-<body>
-    <h2>Додавання нової книги</h2>
-    <form method="POST">
-        {% csrf_token %}
+{% extends 'books/base.html' %}
 
-        {{ form }}
+{% block title %}
+    Додати книгу
+{% endblock %}
 
-        <button> Створити </button>
-    </form>
-</body>
-</html>
+{% block content %}
+
+<h1 class="mb-4">Додати книгу</h1>
+
+<form method="POST">
+
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-success">
+        Додати книгу
+    </button>
+
+    <a href="{% url 'books:list' %}"
+       class="btn btn-secondary">
+        Скасувати
+    </a>
+
+</form>
+
+{% endblock %}

@@ -1,24 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Оновлення інформації про книгу</title>
-</head>
-<body>
-    <h2>Оновлення інформації про книгу</h2>
-    <form method="POST">
-        {% csrf_token %}
+{% extends 'books/base.html' %}
 
-        {{ form }}
+{% block title %}
+    Редагувати книгу
+{% endblock %}
 
-        <button> Оновити інформацію </button>
-        <div> </div>
-    </form>
+{% block content %}
 
-    <form action="{% url 'books:delete' book.pk %}" method="POST" style="display:inline;">
-        {% csrf_token %}
+<h1 class="mb-4">Редагувати книгу</h1>
 
-        <button type="submit" onclick="return confirm('Ви впевненні, що хочете видалити цю книгу?');"> Видалити </button>
-    </form>
-</body>
-</html>
+<form method="POST">
+
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">
+        Зберегти зміни
+    </button>
+
+    <a href="{% url 'books:detail' book.pk %}"
+       class="btn btn-secondary">
+        Скасувати
+    </a>
+
+</form>
+
+
+{% if perms.books.delete_book %}
+
+<hr class="my-4">
+
+<form action="{% url 'books:delete' book.pk %}"
+      method="POST"
+      onsubmit="return confirm('Ви впевнені, що хочете видалити цю книгу?');">
+
+    {% csrf_token %}
+
+    <button type="submit" class="btn btn-danger">
+        Видалити книгу
+    </button>
+
+</form>
+
+{% endif %}
+
+{% endblock %}
