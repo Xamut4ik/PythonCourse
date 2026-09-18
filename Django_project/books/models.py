@@ -1,3 +1,5 @@
+from django.contrib.auth.models import AbstractUser, Permission
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
 
@@ -17,4 +19,12 @@ class Book(models.Model):
     description = models.TextField()
     stock = models.IntegerField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    # class Meta:
+    #     permissions = [
+    #         ("publish_book", "Can publish book"),
+    #     ]
+
+
+class CustomUser(AbstractUser):
+    email = models.EmailField(max_length=100, unique=True)
 

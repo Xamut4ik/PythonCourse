@@ -1,14 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Детальна інформація про книгу</title>
-</head>
-<body>
-    <h2>{{ book.title }}</h2>
-    <p>Автор: {{ book.author }}</p>
-    <p>Ціна: {{ book.price }} </p>
-    <p>Категорія: {{ book.category }}</p>
-    <a href="{% url 'books:update' book.pk %}"> Редагування інформації про книгу </a>
-</body>
-</html>
+{% extends 'books/base.html' %}
+
+{% block title %}
+    {{ book.title }}
+{% endblock %}
+
+{% block content %}
+
+<h1>{{ book.title }}</h1>
+
+<div class="card mt-4">
+
+    <div class="card-body">
+
+        <p>
+            <strong>Автор:</strong>
+            {{ book.author }}
+        </p>
+
+        <p>
+            <strong>Ціна:</strong>
+            {{ book.price }} грн
+        </p>
+
+        <p>
+            <strong>Категорія:</strong>
+            {{ book.category }}
+        </p>
+
+        <p>
+            <strong>На складі:</strong>
+            {{ book.stock }}
+        </p>
+
+        <p>
+            <strong>Опис:</strong>
+            {{ book.description }}
+        </p>
+
+        {% if perms.books.change_book %}
+            <a href="{% url 'books:update' book.pk %}"
+               class="btn btn-primary">
+                Редагувати
+            </a>
+        {% endif %}
+
+        <a href="{% url 'books:list' %}"
+           class="btn btn-secondary">
+            Назад
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

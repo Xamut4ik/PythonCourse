@@ -9,4 +9,7 @@ urlpatterns = [
     path('<int:pk>/', views.DetailBook.as_view(), name='detail'),
     path('<int:pk>/update/', views.UpdateBook.as_view(), name='update'),
     path('<int:pk>/delete/', views.DeleteBook.as_view(), name='delete'),
+    path('register/', views.RegisterUser.as_view(), name='register'),
+    path('login/', views.LoginUser.as_view(), name='login'),
+    path('logout/', views.LogoutUser.as_view(), name='logout'),
 ]

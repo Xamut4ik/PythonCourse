@@ -1,0 +1,23 @@
+{% extends 'books/base.html' %}
+
+{% block title %}
+    Реєстрація
+{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">Реєстрація</h1>
+
+<form method="POST">
+
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-success">
+        Зареєструватися
+    </button>
+
+</form>
+
+{% endblock %}
