@@ -1,0 +1,50 @@
+{% extends 'books/base.html' %}
+
+{% block title %}
+    Оформлення замовлення
+{% endblock %}
+
+{% block content %}
+
+<h1>Оформлення замовлення</h1>
+
+<div class="row mt-4">
+
+    <div class="col-md-7">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit" class="btn btn-primary">
+                Перейти до оплати
+            </button>
+
+            <a href="{% url 'orders:cart_detail' %}" class="btn btn-secondary">
+                Назад до кошика
+            </a>
+        </form>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Ваше замовлення</h5>
+                <ul class="list-unstyled">
+                    {% for item in cart %}
+                        <li>
+                            {{ item.book.title }} × {{ item.quantity }}
+                            — {{ item.total_price }} грн
+                        </li>
+                    {% endfor %}
+                </ul>
+                <p>
+                    <strong>Разом:</strong>
+                    {{ cart.get_total_price }} грн
+                </p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

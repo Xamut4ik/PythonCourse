@@ -37,6 +37,26 @@
             {{ book.description }}
         </p>
 
+        {% if book.stock > 0 %}
+            <form action="{% url 'orders:cart_add' book.pk %}"
+                  method="POST"
+                  class="d-flex gap-2 mb-3">
+                {% csrf_token %}
+                <input type="number"
+                       name="quantity"
+                       value="1"
+                       min="1"
+                       max="{{ book.stock }}"
+                       class="form-control"
+                       style="width: 100px">
+                <button type="submit" class="btn btn-success">
+                    Додати до кошика
+                </button>
+            </form>
+        {% else %}
+            <p class="text-danger">Немає в наявності</p>
+        {% endif %}
+
         {% if perms.books.change_book %}
             <a href="{% url 'books:update' book.pk %}"
                class="btn btn-primary">

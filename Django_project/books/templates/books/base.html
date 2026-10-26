@@ -35,6 +35,14 @@
 
         <div class="ms-auto">
 
+            <a href="{% url 'orders:cart_detail' %}"
+               class="btn btn-warning me-3">
+                🛒 Кошик
+                {% if cart|length %}
+                    <span class="badge bg-dark">{{ cart|length }}</span>
+                {% endif %}
+            </a>
+
             {% if user.is_authenticated %}
 
                 <span class="text-light me-3">
@@ -71,6 +79,12 @@
 </nav>
 
 <main class="container mt-4">
+
+    {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
 
     {% block content %}
     {% endblock %}
