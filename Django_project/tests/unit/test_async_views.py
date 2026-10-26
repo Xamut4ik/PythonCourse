@@ -40,7 +40,7 @@ def test_catalog_stats_context(client, category):
 
 @pytest.mark.django_db
 def test_category_books(client, category, book):
-    BookFactory()  # книга іншої категорії
+    BookFactory()
     response = client.get(reverse('books:category', args=[category.slug]))
     assert response.status_code == 200
     assert response.context['category'] == category

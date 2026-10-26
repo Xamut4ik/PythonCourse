@@ -5,7 +5,6 @@ from .views import SESSION_ORDER_IDS
 
 
 async def order_status(request, pk):
-    """JSON зі статусом замовлення — лише для власника (за сесією або обліковим записом)."""
     try:
         order = await Order.objects.aget(pk=pk)
     except Order.DoesNotExist:

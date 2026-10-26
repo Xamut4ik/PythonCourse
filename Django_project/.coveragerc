@@ -1,6 +1,5 @@
 [run]
 source = .
-# books/queries.py — навчальні приклади запитів, застосунок їх не використовує
 omit =
     tests/*
     */tests.py

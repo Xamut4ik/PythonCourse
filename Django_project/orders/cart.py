@@ -6,7 +6,6 @@ from books.models import Book
 
 
 class Cart:
-    """Кошик, що зберігається в сесії: {book_id: {'quantity': int, 'price': str}}."""
 
     def __init__(self, request):
         self.session = request.session
@@ -37,7 +36,6 @@ class Cart:
         self.save()
 
     def save(self):
-        # Сесія не бачить змін вкладених словників, тому позначаємо її вручну
         self.session.modified = True
 
     def __iter__(self):
@@ -47,7 +45,6 @@ class Cart:
             cart[str(book.id)]['book'] = book
         for item in cart.values():
             if 'book' not in item:
-                # Книгу видалили з каталогу після додавання в кошик
                 continue
             item['price'] = Decimal(item['price'])
             item['total_price'] = item['price'] * item['quantity']

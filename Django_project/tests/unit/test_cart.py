@@ -33,7 +33,7 @@ def test_remove(session_request, book, book2):
     cart.add(book)
     cart.add(book2)
     cart.remove(book)
-    cart.remove(book)  # повторне видалення нічого не ламає
+    cart.remove(book)
     assert list(cart.cart) == [str(book2.pk)]
 
 
@@ -64,7 +64,6 @@ def test_iter_yields_books_with_totals(session_request, book):
     assert item['book'] == book
     assert item['price'] == Decimal('250.50')
     assert item['total_price'] == Decimal('501.00')
-    # Ітерація не повинна записувати Decimal і обʼєкти моделей у сесію
     assert cart.cart[str(book.pk)] == {'quantity': 2, 'price': '250.50'}
 
 

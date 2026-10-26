@@ -27,7 +27,6 @@ def paid_session(order):
 def test_register_login_buy_pay_and_get_email(
     client, book, book2, order_data, stripe_checkout, mocker, django_capture_on_commit_callbacks,
 ):
-    # Реєстрація → вхід
     response = client.post(reverse('books:register'), {
         'username': 'olena', 'email': 'olena@example.com',
         'password1': 'Sup3r-secret!', 'password2': 'Sup3r-secret!',
@@ -36,13 +35,11 @@ def test_register_login_buy_pay_and_get_email(
     response = client.post(reverse('books:login'), {'username': 'olena', 'password': 'Sup3r-secret!'})
     assert response.url == reverse('books:list')
 
-    # Кошик
     client.post(reverse('orders:cart_add', args=[book.pk]), {'quantity': 2})
     client.post(reverse('orders:cart_add', args=[book2.pk]), {'quantity': 1})
     response = client.get(reverse('orders:cart_detail'))
     assert response.context['cart'].get_total_price() == Decimal('681.00')
 
-    # Оформлення → редирект у Stripe
     order_data['email'] = 'olena@example.com'
     with django_capture_on_commit_callbacks(execute=True):
         response = client.post(reverse('orders:order_create'), order_data)
@@ -63,21 +60,18 @@ def test_register_login_buy_pay_and_get_email(
     assert client.session['cart'] == {}
     assert list(Book.objects.order_by('pk').values_list('stock', flat=True)) == [3, 0]
 
-    # Лист
     [email] = mail.outbox
     assert email.to == ['olena@example.com']
     assert email.subject == f'Замовлення #{order.pk} створено'
     assert 'Кобзар × 2 — 501,00 грн' in email.body
     assert 'Разом: 681,00 грн' in email.body
 
-    # Повернення зі Stripe
     mocker.patch('stripe.checkout.Session.retrieve', return_value=paid_session(order))
     response = client.get(reverse('orders:payment_success'), {'session_id': 'cs_test_123'})
     assert 'Оплачено' in response.content.decode()
     order.refresh_from_db()
     assert order.is_paid and order.stripe_payment_intent == 'pi_123'
 
-    # Async-статус бачить оплату
     assert client.get(reverse('orders:order_status', args=[order.pk])).json()['is_paid'] is True
 
 
@@ -124,7 +118,7 @@ def test_out_of_stock_rolls_back_whole_order(
 ):
     add_to_cart(book, 2)
     add_to_cart(book2, 1)
-    Book.objects.filter(pk=book2.pk).update(stock=0)  # останній примірник купили, поки книга лежала в кошику
+    Book.objects.filter(pk=book2.pk).update(stock=0)
 
     with django_capture_on_commit_callbacks(execute=True):
         response = client.post(reverse('orders:order_create'), order_data, follow=True)

@@ -102,7 +102,6 @@ class OrderCreateTests(OrdersTestCase):
     def test_out_of_stock_rolls_back_whole_order(self):
         self.add_to_cart(self.book1, 2)
         self.add_to_cart(self.book2, 1)
-        # Хтось купив останній примірник, поки книга лежала в кошику
         Book.objects.filter(pk=self.book2.pk).update(stock=0)
 
         with self.captureOnCommitCallbacks(execute=True):

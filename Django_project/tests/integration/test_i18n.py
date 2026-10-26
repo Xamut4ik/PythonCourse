@@ -35,8 +35,7 @@ def test_pages_are_translated(client, book, add_to_cart):
     add_to_cart(book, 2)
     uk = client.get('/uk/cart/').content.decode()
     en = client.get('/en/cart/').content.decode()
-    assert 'Оформити замовлення' not in uk  # стара жорстко прописана фраза зникла
-    # Числа теж локалізуються: в українській десятковий роздільник — кома
+    assert 'Оформити замовлення' not in uk
     assert 'Оформлення замовлення' in uk and '501,00 грн' in uk
     assert 'Checkout' in en and '501.00 UAH' in en
 
@@ -48,7 +47,7 @@ def test_messages_and_form_errors_follow_url_language(client, book):
     response = client.post(f'/en/cart/add/{book.pk}/', {'quantity': 99}, follow=True)
     assert [str(m) for m in response.context['messages']] == ['Invalid quantity.']
 
-    response = client.post('/en/orders/create/', {})  # кошик порожній
+    response = client.post('/en/orders/create/', {})
     response = client.get(response.url)
     assert 'Your cart is empty.' in response.content.decode()
 

@@ -19,7 +19,6 @@ class OrderError(Exception):
 
 
 def create_order_from_cart(cart, form, user=None):
-    """Створює замовлення з кошика. Усе або нічого: при будь-якій помилці зміни відкочуються."""
     cart_items = list(cart)
     if not cart_items:
         raise OrderError(_('Your cart is empty.'))
@@ -30,7 +29,6 @@ def create_order_from_cart(cart, form, user=None):
             order.user = user
         order.save()
 
-        # Блокуємо рядки книг до кінця транзакції, щоб паралельні замовлення не продали більше, ніж є на складі
         books = Book.objects.select_for_update().in_bulk(
             [item['book'].id for item in cart_items]
         )
@@ -48,7 +46,6 @@ def create_order_from_cart(cart, form, user=None):
             order_items.append(OrderItem(order=order, book=book, price=book.price, quantity=quantity))
         OrderItem.objects.bulk_create(order_items)
 
-        # Лист відправляємо лише після успішного коміту, а не для відкоченого замовлення
         transaction.on_commit(lambda: send_order_created_email(order.id))
 
     return order
@@ -65,7 +62,6 @@ def send_order_created_email(order_id):
             recipient_list=[order.email],
         )
     except Exception:
-        # Замовлення вже збережене, тому збій пошти не повинен ламати оформлення
         logger.exception('Не вдалося надіслати email для замовлення #%s', order.id)
     else:
         logger.info('Email про замовлення #%s надіслано на %s', order.id, order.email)
@@ -77,7 +73,6 @@ def create_checkout_session(order, request):
         {
             'price_data': {
                 'currency': settings.STRIPE_CURRENCY,
-                # Stripe приймає суму в мінімальних одиницях валюти (копійках)
                 'unit_amount': int(item.price * 100),
                 'product_data': {'name': item.book.title},
             },
@@ -101,9 +96,7 @@ def create_checkout_session(order, request):
 
 
 def mark_order_paid(session):
-    """Позначає замовлення оплаченим за даними Stripe Checkout Session. Повторний виклик безпечний."""
     if hasattr(session, 'to_dict'):
-        # StripeObject у нових версіях stripe не є dict і не має .get()
         session = session.to_dict()
     if session.get('payment_status') != 'paid':
         return None

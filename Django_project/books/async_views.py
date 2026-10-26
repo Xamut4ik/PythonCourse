@@ -5,8 +5,6 @@ from django.shortcuts import aget_object_or_404, render
 
 from .models import Book, Category
 
-# render() синхронний: context processors читають сесію (кошик) і request.user з БД,
-# тому в async view його виконуємо в окремому потоці
 arender = sync_to_async(render)
 
 

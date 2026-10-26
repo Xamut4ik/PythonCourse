@@ -3,7 +3,6 @@ from . import async_views, views
 
 app_name = 'orders'
 
-# Вебхук Stripe підключено в config/urls.py без мовного префікса
 urlpatterns = [
     path('cart/', views.CartDetail.as_view(), name='cart_detail'),
     path('cart/add/<int:book_id>/', views.CartAdd.as_view(), name='cart_add'),

@@ -57,7 +57,6 @@ INTERNAL_IPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # Після сесій (читає з них мову) і перед CommonMiddleware (щоб редирект на /uk/... спрацював раніше за APPEND_SLASH)
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

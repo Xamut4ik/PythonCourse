@@ -39,7 +39,6 @@ class DetailBook(DetailView):
     context_object_name = 'book'
 
 
-# Міксини мають стояти ліворуч від generic view, інакше їхній dispatch() не викликається
 class BookPermissionMixin(LoginRequiredMixin, PermissionRequiredMixin):
     login_url = reverse_lazy('books:login')
     success_url = reverse_lazy('books:list')

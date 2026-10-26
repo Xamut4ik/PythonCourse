@@ -27,7 +27,6 @@ def test_book_list_search_and_pagination(client, category):
     BookFactory.create_batch(7, category=category, author='Леся Українка')
     target = BookFactory(title='Кобзар', author='Шевченко', category=category)
 
-    # Регістр збігається з назвою: у тестовій SQLite icontains нечутливий до регістру лише для ASCII
     response = client.get(reverse('books:list'), {'q': 'Кобз'})
     assert list(response.context['books']) == [target]
     assert response.context['query'] == 'Кобз'

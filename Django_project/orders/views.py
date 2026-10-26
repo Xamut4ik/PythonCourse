@@ -23,7 +23,6 @@ SESSION_ORDER_IDS = 'order_ids'
 
 
 def get_own_order(request, pk):
-    """Повертає замовлення лише його власнику: автору сесії або користувачу, що його створив."""
     order = get_object_or_404(Order, pk=pk)
     own_by_session = pk in request.session.get(SESSION_ORDER_IDS, [])
     own_by_user = request.user.is_authenticated and order.user_id == request.user.id
@@ -115,7 +114,6 @@ class OrderCreate(FormView):
 
 
 class OrderPay(View):
-    """Створює Stripe Checkout Session і перенаправляє на сторінку оплати Stripe."""
 
     def get(self, request, pk):
         order = get_own_order(request, pk)
@@ -144,7 +142,6 @@ class PaymentSuccess(TemplateView):
             session = stripe.checkout.Session.retrieve(session_id)
         except stripe.StripeError:
             raise Http404
-        # Вебхук — основне джерело істини, але підтверджуємо і тут, на випадок якщо він ще не дійшов
         mark_order_paid(session)
         context['order'] = get_own_order(self.request, int(session.client_reference_id))
         return context

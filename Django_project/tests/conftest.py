@@ -21,7 +21,6 @@ BOOK_PERMISSIONS = ['add_book', 'change_book', 'delete_book']
 
 @pytest.fixture(autouse=True)
 def default_language():
-    # LocaleMiddleware не скидає мову після запиту — без цього reverse() у наступному тесті міг би дати /en/
     translation.activate('uk')
     yield
     translation.deactivate()
@@ -88,7 +87,6 @@ def cart_session(client):
 
 @pytest.fixture
 def session_request(rf, db):
-    """Запит із реальною сесією — для юніт-тестів Cart без проходження middleware."""
     request = rf.get('/')
     request.session = SessionStore()
     return request

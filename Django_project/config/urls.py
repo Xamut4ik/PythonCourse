@@ -5,7 +5,6 @@ from django.views.generic import RedirectView
 
 from orders.views import StripeWebhook
 
-# Без мовного префікса: перемикач мови, вебхук Stripe (йому потрібна стабільна адреса) і debug toolbar
 urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     path('payment/webhook/', StripeWebhook.as_view(), name='stripe_webhook'),
