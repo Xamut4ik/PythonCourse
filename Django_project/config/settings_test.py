@@ -1,4 +1,4 @@
-from .settings import *  # noqa: F401,F403
+from .settings import *
 
 DATABASES = {
     'default': {
@@ -21,4 +21,4 @@ STRIPE_SECRET_KEY = 'sk_test_dummy'
 STRIPE_WEBHOOK_SECRET = 'whsec_dummy'
 STRIPE_CURRENCY = 'uah'
 
-MIDDLEWARE = [m for m in MIDDLEWARE if m != 'books.middleware.RequestLogMiddleware']  # noqa: F405
+MIDDLEWARE = [m for m in MIDDLEWARE if m != 'books.middleware.RequestLogMiddleware']

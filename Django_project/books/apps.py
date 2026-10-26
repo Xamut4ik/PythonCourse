@@ -7,4 +7,4 @@ class BooksConfig(AppConfig):
     verbose_name = _('Books')
 
     def ready(self):
-        from . import signals  # noqa: F401
+        from . import signals
