@@ -1,0 +1,12 @@
+{% autoescape off %}Вітаємо, {{ order.first_name }}!
+
+Ваше замовлення #{{ order.id }} успішно створено.
+
+{% for item in order.items.all %}- {{ item.book.title }} × {{ item.quantity }} — {{ item.get_cost }} грн
+{% endfor %}
+Разом: {{ order.get_total_cost }} грн
+
+Адреса доставки: {{ order.city }}, {{ order.address }}
+
+Дякуємо, що обрали наш книжковий магазин!
+{% endautoescape %}
