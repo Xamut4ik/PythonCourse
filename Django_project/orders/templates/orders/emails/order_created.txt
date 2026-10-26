@@ -1,12 +1,12 @@
-{% autoescape off %}Вітаємо, {{ order.first_name }}!
+{% load i18n %}{% autoescape off %}{% blocktranslate with name=order.first_name %}Hello, {{ name }}!{% endblocktranslate %}
 
-Ваше замовлення #{{ order.id }} успішно створено.
+{% blocktranslate with id=order.id %}Your order #{{ id }} has been created.{% endblocktranslate %}
 
-{% for item in order.items.all %}- {{ item.book.title }} × {{ item.quantity }} — {{ item.get_cost }} грн
+{% for item in order.items.all %}- {{ item.book.title }} × {{ item.quantity }} — {% blocktranslate with price=item.get_cost %}{{ price }} UAH{% endblocktranslate %}
 {% endfor %}
-Разом: {{ order.get_total_cost }} грн
+{% translate "Total" %}: {% blocktranslate with price=order.get_total_cost %}{{ price }} UAH{% endblocktranslate %}
 
-Адреса доставки: {{ order.city }}, {{ order.address }}
+{% translate "Delivery address" %}: {{ order.city }}, {{ order.address }}
 
-Дякуємо, що обрали наш книжковий магазин!
+{% translate "Thank you for choosing our bookstore!" %}
 {% endautoescape %}

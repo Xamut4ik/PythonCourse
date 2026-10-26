@@ -1,11 +1,13 @@
+from django.conf import settings
+from django.contrib.auth.models import Group
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.auth.models import Group, User
-from django.contrib.auth import get_user_model
 
-user_model = get_user_model()
+DEFAULT_GROUP_NAME = 'Користувачі'
 
-@receiver(post_save, sender=User)
-def add_user_(sender, instance, created, **kwargs):
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def add_user_to_default_group(sender, instance, created, **kwargs):
     if created:
-        is_created = Group.objects.get_or_create(name='Користувачі')
+        group, _ = Group.objects.get_or_create(name=DEFAULT_GROUP_NAME)
+        instance.groups.add(group)

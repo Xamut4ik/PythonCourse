@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 from books.models import Book
 from .models import Order, OrderItem
@@ -21,7 +22,7 @@ def create_order_from_cart(cart, form, user=None):
     """Створює замовлення з кошика. Усе або нічого: при будь-якій помилці зміни відкочуються."""
     cart_items = list(cart)
     if not cart_items:
-        raise OrderError('Кошик порожній.')
+        raise OrderError(_('Your cart is empty.'))
 
     with transaction.atomic():
         order = form.save(commit=False)
@@ -39,7 +40,8 @@ def create_order_from_cart(cart, form, user=None):
             quantity = item['quantity']
             if book.stock < quantity:
                 raise OrderError(
-                    f'Недостатньо примірників "{book.title}" на складі (доступно: {book.stock}).'
+                    _('Not enough copies of "%(title)s" in stock (available: %(stock)s).')
+                    % {'title': book.title, 'stock': book.stock}
                 )
             book.stock -= quantity
             book.save(update_fields=['stock'])
@@ -57,7 +59,7 @@ def send_order_created_email(order_id):
     message = render_to_string('orders/emails/order_created.txt', {'order': order})
     try:
         send_mail(
-            subject=f'Замовлення #{order.id} створено',
+            subject=_('Order #%(id)s created') % {'id': order.id},
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[order.email],

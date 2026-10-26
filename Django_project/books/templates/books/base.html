@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="uk">
+{% load i18n %}{% get_current_language as LANGUAGE_CODE %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>{% block title %}Книжковий магазин{% endblock %}</title>
+    <title>{% block title %}{% translate "Bookstore" %}{% endblock %}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
@@ -16,28 +16,52 @@
     <div class="container">
 
         <a class="navbar-brand" href="{% url 'books:list' %}">
-            📚 Книжковий магазин
+            📚 {% translate "Bookstore" %}
         </a>
 
         <div class="navbar-nav">
             <a class="nav-link" href="{% url 'books:list' %}">
-                Книги
+                {% translate "Books" %}
+            </a>
+
+            <a class="nav-link" href="{% url 'books:stats' %}">
+                {% translate "Statistics" %}
             </a>
 
             {% if user.is_authenticated %}
                 {% if perms.books.add_book %}
                     <a class="nav-link" href="{% url 'books:create' %}">
-                        Додати книгу
+                        {% translate "Add book" %}
                     </a>
                 {% endif %}
             {% endif %}
         </div>
 
-        <div class="ms-auto">
+        <div class="ms-auto d-flex align-items-center">
+
+            <form action="{% url 'set_language' %}" method="POST" class="me-3">
+                {% csrf_token %}
+                <input name="next" type="hidden" value="{{ request.get_full_path }}">
+                {% get_available_languages as LANGUAGES %}
+                {% get_language_info_list for LANGUAGES as languages %}
+                <select name="language"
+                        class="form-select form-select-sm"
+                        aria-label="{% translate 'Language' %}"
+                        onchange="this.form.submit()">
+                    {% for language in languages %}
+                        <option value="{{ language.code }}"{% if language.code == LANGUAGE_CODE %} selected{% endif %}>
+                            {{ language.name_local }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <noscript>
+                    <button type="submit" class="btn btn-sm btn-light">{% translate "Change" %}</button>
+                </noscript>
+            </form>
 
             <a href="{% url 'orders:cart_detail' %}"
                class="btn btn-warning me-3">
-                🛒 Кошик
+                🛒 {% translate "Cart" %}
                 {% if cart|length %}
                     <span class="badge bg-dark">{{ cart|length }}</span>
                 {% endif %}
@@ -46,7 +70,7 @@
             {% if user.is_authenticated %}
 
                 <span class="text-light me-3">
-                    Ви увійшли як {{ user.username }}
+                    {% blocktranslate with username=user.username %}Logged in as {{ username }}{% endblocktranslate %}
                 </span>
 
                 <form action="{% url 'books:logout' %}"
@@ -55,7 +79,7 @@
                     {% csrf_token %}
 
                     <button type="submit" class="btn btn-outline-light">
-                        Вийти
+                        {% translate "Log out" %}
                     </button>
                 </form>
 
@@ -63,12 +87,12 @@
 
                 <a href="{% url 'books:login' %}"
                    class="btn btn-outline-light me-2">
-                    Увійти
+                    {% translate "Log in" %}
                 </a>
 
                 <a href="{% url 'books:register' %}"
                    class="btn btn-light">
-                    Реєстрація
+                    {% translate "Sign up" %}
                 </a>
 
             {% endif %}

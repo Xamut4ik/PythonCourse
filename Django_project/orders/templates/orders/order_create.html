@@ -1,12 +1,13 @@
 {% extends 'books/base.html' %}
+{% load i18n %}
 
 {% block title %}
-    Оформлення замовлення
+    {% translate "Checkout" %}
 {% endblock %}
 
 {% block content %}
 
-<h1>Оформлення замовлення</h1>
+<h1>{% translate "Checkout" %}</h1>
 
 <div class="row mt-4">
 
@@ -16,11 +17,11 @@
             {{ form.as_p }}
 
             <button type="submit" class="btn btn-primary">
-                Перейти до оплати
+                {% translate "Proceed to payment" %}
             </button>
 
             <a href="{% url 'orders:cart_detail' %}" class="btn btn-secondary">
-                Назад до кошика
+                {% translate "Back to cart" %}
             </a>
         </form>
     </div>
@@ -28,18 +29,18 @@
     <div class="col-md-5">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Ваше замовлення</h5>
+                <h5 class="card-title">{% translate "Your order" %}</h5>
                 <ul class="list-unstyled">
                     {% for item in cart %}
                         <li>
                             {{ item.book.title }} × {{ item.quantity }}
-                            — {{ item.total_price }} грн
+                            — {% blocktranslate with price=item.total_price %}{{ price }} UAH{% endblocktranslate %}
                         </li>
                     {% endfor %}
                 </ul>
                 <p>
-                    <strong>Разом:</strong>
-                    {{ cart.get_total_price }} грн
+                    <strong>{% translate "Total" %}:</strong>
+                    {% blocktranslate with price=cart.get_total_price %}{{ price }} UAH{% endblocktranslate %}
                 </p>
             </div>
         </div>

@@ -11,10 +11,10 @@
   "model": "books.book",
   "pk": 1,
   "fields": {
-    "title": "Гаррі Поттер",
-    "author": "Джоан Роулінг",
-    "price": "20.00",
-    "description": "пйпйцпЙЦП",
+    "title": "Р“Р°СЂСЂС– РџРѕС‚С‚РµСЂ",
+    "author": "Р”Р¶РѕР°РЅ Р РѕСѓР»С–РЅРі",
+    "price": "200.00",
+    "description": "РїР№РїР№С†РїР™Р¦Рџ",
     "stock": 12,
     "category": 1
   }
@@ -23,10 +23,10 @@
   "model": "books.book",
   "pk": 2,
   "fields": {
-    "title": "Енікі Бенікі",
-    "author": "Я",
-    "price": "12.00",
-    "description": "ааа",
+    "title": "Р•РЅС–РєС– Р‘РµРЅС–РєС–",
+    "author": "РЇ",
+    "price": "120.00",
+    "description": "Р°Р°Р°",
     "stock": 12,
     "category": 1
   }

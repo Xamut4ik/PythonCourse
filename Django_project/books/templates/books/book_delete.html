@@ -1,0 +1,31 @@
+{% extends 'books/base.html' %}
+{% load i18n %}
+
+{% block title %}
+    {% translate "Delete book" %}
+{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">{% translate "Delete book" %}</h1>
+
+<form method="POST">
+
+    {% csrf_token %}
+
+    <p>
+        {% blocktranslate with title=book.title %}Are you sure you want to delete "{{ title }}"?{% endblocktranslate %}
+    </p>
+
+    <button type="submit" class="btn btn-danger">
+        {% translate "Delete" %}
+    </button>
+
+    <a href="{% url 'books:detail' book.pk %}"
+       class="btn btn-secondary">
+        {% translate "Cancel" %}
+    </a>
+
+</form>
+
+{% endblock %}

@@ -13,7 +13,7 @@
     "fields": {
       "title": "Гаррі Поттер",
       "author": "Джоан Роулінг",
-      "price": "20.00",
+      "price": "200.00",
       "description": "пйпйцпЙЦП",
       "stock": 12,
       "category": 1
@@ -25,7 +25,7 @@
     "fields": {
       "title": "Енікі Бенікі",
       "author": "Я",
-      "price": "12.00",
+      "price": "120.00",
       "description": "ааа",
       "stock": 12,
       "category": 1

@@ -1,16 +1,17 @@
 {% extends 'books/base.html' %}
+{% load i18n %}
 
 {% block title %}
-    Список книг
+    {% translate "Book list" %}
 {% endblock %}
 
 {% block content %}
 
-    <h1>Список книг</h1>
+    <h1>{% translate "Book list" %}</h1>
 
     <form method="GET" class="mb-3">
-        <input type="text" name="q" placeholder="Назва або автор">
-        <button type="submit">Пошук</button>
+        <input type="text" name="q" value="{{ query }}" placeholder="{% translate 'Title or author' %}">
+        <button type="submit">{% translate "Search" %}</button>
     </form>
 
     {% for book in books %}
@@ -20,7 +21,7 @@
             </a>
         </div>
     {% empty %}
-        <p>Книг не знайдено.</p>
+        <p>{% translate "No books found." %}</p>
     {% endfor %}
 
     {% if is_paginated %}
@@ -28,18 +29,17 @@
 
             {% if page_obj.has_previous %}
                 <a href="?page={{ page_obj.previous_page_number }}">
-                    Назад
+                    {% translate "Previous" %}
                 </a>
             {% endif %}
 
             <span>
-                Сторінка {{ page_obj.number }}
-                з {{ page_obj.paginator.num_pages }}
+                {% blocktranslate with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktranslate %}
             </span>
 
             {% if page_obj.has_next %}
                 <a href="?page={{ page_obj.next_page_number }}">
-                    Далі
+                    {% translate "Next" %}
                 </a>
             {% endif %}
 

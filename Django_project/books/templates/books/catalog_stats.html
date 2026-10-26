@@ -1,0 +1,54 @@
+{% extends 'books/base.html' %}
+{% load i18n %}
+
+{% block title %}
+    {% translate "Catalog statistics" %}
+{% endblock %}
+
+{% block content %}
+
+<h1>{% translate "Catalog statistics" %}</h1>
+
+<div class="row mt-4 g-3">
+    <div class="col-md-3">
+        <div class="card"><div class="card-body">
+            <div class="text-muted">{% translate "Books" %}</div>
+            <div class="fs-3">{{ books_count }}</div>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card"><div class="card-body">
+            <div class="text-muted">{% translate "Categories" %}</div>
+            <div class="fs-3">{{ categories_count }}</div>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card"><div class="card-body">
+            <div class="text-muted">{% translate "Copies in stock" %}</div>
+            <div class="fs-3">{{ total_stock }}</div>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card"><div class="card-body">
+            <div class="text-muted">{% translate "Out of stock" %}</div>
+            <div class="fs-3">{{ out_of_stock_count }}</div>
+        </div></div>
+    </div>
+</div>
+
+<h2 class="h4 mt-5">{% translate "Categories" %}</h2>
+
+<ul class="list-group mt-3">
+    {% for category in categories %}
+        <li class="list-group-item d-flex justify-content-between">
+            <a href="{% url 'books:category' category.slug %}">{{ category.name }}</a>
+            <span class="badge bg-secondary">
+                {% blocktranslate count counter=category.book_count %}{{ counter }} book{% plural %}{{ counter }} books{% endblocktranslate %}
+            </span>
+        </li>
+    {% empty %}
+        <li class="list-group-item">{% translate "No categories yet." %}</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

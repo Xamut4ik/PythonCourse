@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.translation import gettext_lazy as _
+
 from .models import Order, OrderItem
 
 
@@ -8,7 +10,7 @@ class OrderItemInline(admin.TabularInline):
     readonly_fields = ('cost',)
     extra = 0
 
-    @admin.display(description='Сума')
+    @admin.display(description=_('Cost'))
     def cost(self, obj):
         return obj.get_cost() if obj.pk else '-'
 
@@ -24,6 +26,6 @@ class OrderAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('items')
 
-    @admin.display(description='Сума')
+    @admin.display(description=_('Total'))
     def total(self, obj):
         return obj.get_total_cost()

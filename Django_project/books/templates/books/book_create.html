@@ -1,12 +1,13 @@
 {% extends 'books/base.html' %}
+{% load i18n %}
 
 {% block title %}
-    Додати книгу
+    {% translate "Add book" %}
 {% endblock %}
 
 {% block content %}
 
-<h1 class="mb-4">Додати книгу</h1>
+<h1 class="mb-4">{% translate "Add book" %}</h1>
 
 <form method="POST">
 
@@ -15,12 +16,12 @@
     {{ form.as_p }}
 
     <button type="submit" class="btn btn-success">
-        Додати книгу
+        {% translate "Add book" %}
     </button>
 
     <a href="{% url 'books:list' %}"
        class="btn btn-secondary">
-        Скасувати
+        {% translate "Cancel" %}
     </a>
 
 </form>

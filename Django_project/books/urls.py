@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import async_views, views
 
 app_name = 'books'
 
@@ -12,4 +12,7 @@ urlpatterns = [
     path('register/', views.RegisterUser.as_view(), name='register'),
     path('login/', views.LoginUser.as_view(), name='login'),
     path('logout/', views.LogoutUser.as_view(), name='logout'),
+    path('stats/', async_views.catalog_stats, name='stats'),
+    path('category/<slug:slug>/', async_views.category_books, name='category'),
+    path('api/<int:pk>/', async_views.book_api, name='api_detail'),
 ]

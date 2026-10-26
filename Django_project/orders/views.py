@@ -5,8 +5,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import FormView, TemplateView
@@ -52,7 +52,7 @@ class CartAdd(View):
         cart = Cart(request)
         form = CartAddBookForm(request.POST)
         if not form.is_valid():
-            messages.error(request, 'Некоректна кількість.')
+            messages.error(request, _('Invalid quantity.'))
             return redirect('orders:cart_detail')
 
         quantity = form.cleaned_data['quantity']
@@ -60,10 +60,12 @@ class CartAdd(View):
         in_cart = cart.cart.get(str(book.id), {}).get('quantity', 0)
         wanted = quantity if override else in_cart + quantity
         if wanted > book.stock:
-            messages.error(request, f'На складі лише {book.stock} шт. книги "{book.title}".')
+            messages.error(request, _('Only %(stock)s copies of "%(title)s" are in stock.') % {
+                'stock': book.stock, 'title': book.title,
+            })
         else:
             cart.add(book, quantity=quantity, override_quantity=override)
-            messages.success(request, f'"{book.title}" додано до кошика.')
+            messages.success(request, _('"%(title)s" added to the cart.') % {'title': book.title})
         return redirect('orders:cart_detail')
 
 
@@ -86,7 +88,7 @@ class OrderCreate(FormView):
 
     def dispatch(self, request, *args, **kwargs):
         if not len(Cart(request)):
-            messages.info(request, 'Кошик порожній.')
+            messages.info(request, _('Your cart is empty.'))
             return redirect('orders:cart_detail')
         return super().dispatch(request, *args, **kwargs)
 
@@ -118,13 +120,13 @@ class OrderPay(View):
     def get(self, request, pk):
         order = get_own_order(request, pk)
         if order.status != Order.Status.PENDING:
-            messages.info(request, f'{order} вже не очікує оплати.')
+            messages.info(request, _('%(order)s is no longer awaiting payment.') % {'order': order})
             return redirect('books:list')
         try:
             session = create_checkout_session(order, request)
         except stripe.StripeError:
             logger.exception('Не вдалося створити Stripe Checkout Session для %s', order)
-            messages.error(request, 'Не вдалося перейти до оплати. Спробуйте пізніше.')
+            messages.error(request, _('Could not proceed to payment. Please try again later.'))
             return redirect('orders:payment_cancel', pk=order.id)
         return redirect(session.url, permanent=False)
 

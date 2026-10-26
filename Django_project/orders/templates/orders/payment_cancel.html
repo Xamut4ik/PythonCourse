@@ -1,12 +1,13 @@
 {% extends 'books/base.html' %}
+{% load i18n %}
 
 {% block title %}
-    Оплату не завершено
+    {% translate "Payment not completed" %}
 {% endblock %}
 
 {% block content %}
 
-<h1>Оплату не завершено</h1>
+<h1>{% translate "Payment not completed" %}</h1>
 
 <div class="card mt-4">
     <div class="card-body">
@@ -15,15 +16,15 @@
         </p>
 
         {% if order.status == 'pending' %}
-            <p>Ви можете повторити оплату будь-коли.</p>
+            <p>{% translate "You can retry the payment at any time." %}</p>
 
             <a href="{% url 'orders:pay' order.pk %}" class="btn btn-primary">
-                Оплатити {{ order.get_total_cost }} грн
+                {% blocktranslate with price=order.get_total_cost %}Pay {{ price }} UAH{% endblocktranslate %}
             </a>
         {% endif %}
 
         <a href="{% url 'books:list' %}" class="btn btn-secondary">
-            До каталогу
+            {% translate "Go to catalog" %}
         </a>
     </div>
 </div>

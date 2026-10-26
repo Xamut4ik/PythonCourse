@@ -1,4 +1,5 @@
 {% extends 'books/base.html' %}
+{% load i18n %}
 
 {% block title %}
     {{ book.title }}
@@ -13,27 +14,27 @@
     <div class="card-body">
 
         <p>
-            <strong>Автор:</strong>
+            <strong>{% translate "Author" %}:</strong>
             {{ book.author }}
         </p>
 
         <p>
-            <strong>Ціна:</strong>
-            {{ book.price }} грн
+            <strong>{% translate "Price" %}:</strong>
+            {% blocktranslate with price=book.price %}{{ price }} UAH{% endblocktranslate %}
         </p>
 
         <p>
-            <strong>Категорія:</strong>
-            {{ book.category }}
+            <strong>{% translate "Category" %}:</strong>
+            <a href="{% url 'books:category' book.category.slug %}">{{ book.category }}</a>
         </p>
 
         <p>
-            <strong>На складі:</strong>
+            <strong>{% translate "In stock" %}:</strong>
             {{ book.stock }}
         </p>
 
         <p>
-            <strong>Опис:</strong>
+            <strong>{% translate "Description" %}:</strong>
             {{ book.description }}
         </p>
 
@@ -50,23 +51,23 @@
                        class="form-control"
                        style="width: 100px">
                 <button type="submit" class="btn btn-success">
-                    Додати до кошика
+                    {% translate "Add to cart" %}
                 </button>
             </form>
         {% else %}
-            <p class="text-danger">Немає в наявності</p>
+            <p class="text-danger">{% translate "Out of stock" %}</p>
         {% endif %}
 
         {% if perms.books.change_book %}
             <a href="{% url 'books:update' book.pk %}"
                class="btn btn-primary">
-                Редагувати
+                {% translate "Edit" %}
             </a>
         {% endif %}
 
         <a href="{% url 'books:list' %}"
            class="btn btn-secondary">
-            Назад
+            {% translate "Back" %}
         </a>
 
     </div>

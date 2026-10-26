@@ -1,12 +1,13 @@
 {% extends 'books/base.html' %}
+{% load i18n %}
 
 {% block title %}
-    Редагувати книгу
+    {% translate "Edit book" %}
 {% endblock %}
 
 {% block content %}
 
-<h1 class="mb-4">Редагувати книгу</h1>
+<h1 class="mb-4">{% translate "Edit book" %}</h1>
 
 <form method="POST">
 
@@ -15,12 +16,12 @@
     {{ form.as_p }}
 
     <button type="submit" class="btn btn-primary">
-        Зберегти зміни
+        {% translate "Save changes" %}
     </button>
 
     <a href="{% url 'books:detail' book.pk %}"
        class="btn btn-secondary">
-        Скасувати
+        {% translate "Cancel" %}
     </a>
 
 </form>
@@ -30,17 +31,9 @@
 
 <hr class="my-4">
 
-<form action="{% url 'books:delete' book.pk %}"
-      method="POST"
-      onsubmit="return confirm('Ви впевнені, що хочете видалити цю книгу?');">
-
-    {% csrf_token %}
-
-    <button type="submit" class="btn btn-danger">
-        Видалити книгу
-    </button>
-
-</form>
+<a href="{% url 'books:delete' book.pk %}" class="btn btn-danger">
+    {% translate "Delete book" %}
+</a>
 
 {% endif %}
 

@@ -1,0 +1,16 @@
+[run]
+source = .
+# books/queries.py — навчальні приклади запитів, застосунок їх не використовує
+omit =
+    tests/*
+    */tests.py
+    */migrations/*
+    manage.py
+    config/asgi.py
+    config/wsgi.py
+    config/settings_test.py
+    books/queries.py
+
+[report]
+show_missing = true
+skip_empty = true
