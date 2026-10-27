@@ -22,3 +22,6 @@ STRIPE_WEBHOOK_SECRET = 'whsec_dummy'
 STRIPE_CURRENCY = 'uah'
 
 MIDDLEWARE = [m for m in MIDDLEWARE if m != 'books.middleware.RequestLogMiddleware']
+
+SECRET_KEY = 'test-secret-key-for-pytest-only-0123456789abcdef'
+SIMPLE_JWT = {**SIMPLE_JWT, 'SIGNING_KEY': SECRET_KEY}

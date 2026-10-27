@@ -70,3 +70,43 @@ class OrderItem(models.Model):
 
     def get_cost(self):
         return self.price * self.quantity
+
+
+class Cart(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='cart',
+        verbose_name=_('user'),
+    )
+    created = models.DateTimeField(_('created'), auto_now_add=True)
+    updated = models.DateTimeField(_('updated'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('cart')
+        verbose_name_plural = _('carts')
+
+    def __str__(self):
+        return _('Cart of %(user)s') % {'user': self.user}
+
+    def get_total_price(self):
+        return sum((item.get_cost() for item in self.items.all()), Decimal('0'))
+
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items', verbose_name=_('cart'))
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='cart_items', verbose_name=_('book'))
+    quantity = models.PositiveIntegerField(_('quantity'), default=1, validators=[MinValueValidator(1)])
+
+    class Meta:
+        verbose_name = _('cart item')
+        verbose_name_plural = _('cart items')
+        constraints = [
+            models.UniqueConstraint(fields=['cart', 'book'], name='unique_cart_book'),
+        ]
+
+    def __str__(self):
+        return f'{self.book} x {self.quantity}'
+
+    def get_cost(self):
+        return self.book.price * self.quantity

@@ -28,27 +28,50 @@ def create_order_from_cart(cart, form, user=None):
         if user is not None and user.is_authenticated:
             order.user = user
         order.save()
-
-        books = Book.objects.select_for_update().in_bulk(
-            [item['book'].id for item in cart_items]
-        )
-        order_items = []
-        for item in cart_items:
-            book = books[item['book'].id]
-            quantity = item['quantity']
-            if book.stock < quantity:
-                raise OrderError(
-                    _('Not enough copies of "%(title)s" in stock (available: %(stock)s).')
-                    % {'title': book.title, 'stock': book.stock}
-                )
-            book.stock -= quantity
-            book.save(update_fields=['stock'])
-            order_items.append(OrderItem(order=order, book=book, price=book.price, quantity=quantity))
-        OrderItem.objects.bulk_create(order_items)
-
+        _add_order_items(order, [(item['book'].id, item['quantity']) for item in cart_items])
         transaction.on_commit(lambda: send_order_created_email(order.id))
 
     return order
+
+
+def create_order(user, contact_data, items):
+    if not items:
+        raise OrderError(_('Your cart is empty.'))
+
+    with transaction.atomic():
+        order = Order.objects.create(user=user, **contact_data)
+        _add_order_items(order, items)
+        transaction.on_commit(lambda: send_order_created_email(order.id))
+
+    return order
+
+
+def _add_order_items(order, items):
+    books = Book.objects.select_for_update().in_bulk([book_id for book_id, _quantity in items])
+    order_items = []
+    for book_id, quantity in items:
+        book = books.get(book_id)
+        if book is None:
+            raise OrderError(_('Book #%(id)s does not exist.') % {'id': book_id})
+        if book.stock < quantity:
+            raise OrderError(
+                _('Not enough copies of "%(title)s" in stock (available: %(stock)s).')
+                % {'title': book.title, 'stock': book.stock}
+            )
+        book.stock -= quantity
+        book.save(update_fields=['stock'])
+        order_items.append(OrderItem(order=order, book=book, price=book.price, quantity=quantity))
+    OrderItem.objects.bulk_create(order_items)
+
+
+def restore_order_stock(order):
+    with transaction.atomic():
+        items = list(order.items.all())
+        books = Book.objects.select_for_update().in_bulk([item.book_id for item in items])
+        for item in items:
+            book = books[item.book_id]
+            book.stock += item.quantity
+            book.save(update_fields=['stock'])
 
 
 def send_order_created_email(order_id):
@@ -106,7 +129,17 @@ def mark_order_paid(session):
         if order is None:
             logger.warning('Stripe session %s посилається на неіснуюче замовлення %s', session.get('id'), order_id)
             return None
-        if not order.is_paid:
+        if order.status == Order.Status.CANCELLED:
+            payment_intent = session.get('payment_intent') or ''
+            if payment_intent != order.stripe_payment_intent or not payment_intent:
+                order.stripe_session_id = session.get('id') or order.stripe_session_id
+                order.stripe_payment_intent = payment_intent or order.stripe_payment_intent
+                order.save(update_fields=['stripe_session_id', 'stripe_payment_intent', 'updated'])
+                logger.error(
+                    'Оплачено скасоване замовлення #%s (payment intent %s), потрібне повернення коштів',
+                    order.id, payment_intent or '-',
+                )
+        elif not order.is_paid:
             order.status = Order.Status.PAID
             order.stripe_session_id = session.get('id') or order.stripe_session_id
             order.stripe_payment_intent = session.get('payment_intent') or ''

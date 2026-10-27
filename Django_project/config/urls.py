@@ -8,6 +8,7 @@ from orders.views import StripeWebhook
 urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     path('payment/webhook/', StripeWebhook.as_view(), name='stripe_webhook'),
+    path('api/', include('api.urls')),
     path('__debug__/', include('debug_toolbar.urls')),
 ]
 

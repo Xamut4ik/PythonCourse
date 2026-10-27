@@ -135,3 +135,50 @@ def test_request_log_middleware_prints_request(rf, capsys):
     response = middleware(rf.post('/uk/books/'))
     assert response.status_code == 201
     assert capsys.readouterr().out.strip() == 'POST /uk/books/ 201'
+
+
+def paid_stripe_session(order):
+    return stripe.checkout.Session.construct_from({
+        'id': 'cs_test_1', 'payment_status': 'paid',
+        'client_reference_id': str(order.pk), 'payment_intent': 'pi_1',
+    }, 'sk_test_dummy')
+
+
+def test_payment_success_for_cancelled_order_shows_refund_notice(auth_client, user, mocker):
+    order = OrderFactory(user=user, status=Order.Status.CANCELLED, email='taras@example.com')
+    mocker.patch('stripe.checkout.Session.retrieve', return_value=paid_stripe_session(order))
+    response = auth_client.get(reverse('orders:payment_success'), {'session_id': 'cs_test_1'})
+    content = response.content.decode()
+    assert response.status_code == 200
+    assert 'Це замовлення скасовано' in content
+    assert 'кошти буде повернуто' in content
+    assert 'taras@example.com' in content
+    assert 'Дякуємо за покупку!' not in content
+    order.refresh_from_db()
+    assert order.status == Order.Status.CANCELLED
+
+
+def test_payment_success_for_paid_order_shows_thanks(auth_client, user, mocker):
+    order = OrderFactory(user=user)
+    mocker.patch('stripe.checkout.Session.retrieve', return_value=paid_stripe_session(order))
+    content = auth_client.get(reverse('orders:payment_success'), {'session_id': 'cs_test_1'}).content.decode()
+    assert 'Дякуємо за покупку!' in content
+    assert 'скасовано' not in content
+
+
+def test_payment_success_cancelled_page_in_english(auth_client, user, mocker):
+    order = OrderFactory(user=user, status=Order.Status.CANCELLED)
+    mocker.patch('stripe.checkout.Session.retrieve', return_value=paid_stripe_session(order))
+    response = auth_client.get('/en/payment/success/', {'session_id': 'cs_test_1'})
+    assert 'This order has been cancelled' in response.content.decode()
+
+
+def test_cancelled_order_with_unpaid_session_has_no_refund_notice(auth_client, user, mocker):
+    order = OrderFactory(user=user, status=Order.Status.CANCELLED)
+    session = stripe.checkout.Session.construct_from({
+        'id': 'cs_test_1', 'payment_status': 'unpaid', 'client_reference_id': str(order.pk),
+    }, 'sk_test_dummy')
+    mocker.patch('stripe.checkout.Session.retrieve', return_value=session)
+    content = auth_client.get(reverse('orders:payment_success'), {'session_id': 'cs_test_1'}).content.decode()
+    assert 'Це замовлення скасовано' in content
+    assert 'кошти буде повернуто' not in content

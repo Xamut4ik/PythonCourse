@@ -1,39 +1,47 @@
 Command: coverage run -m pytest && coverage report
-Tests: 144 passed
+Tests: 221 passed
 
 == Models ==
 Name               Stmts   Miss  Cover   Missing
 ------------------------------------------------
 books\models.py       31      0   100%
-orders\models.py      46      0   100%
+orders\models.py      69      0   100%
 ------------------------------------------------
-TOTAL                 77      0   100%
+TOTAL                100      0   100%
 
 == Full project ==
 Name                           Stmts   Miss  Cover   Missing
 ------------------------------------------------------------
+api\permissions.py                11      0   100%
+api\urls.py                       13      0   100%
 books\admin.py                    12      0   100%
+books\api_views.py                31      0   100%
 books\apps.py                      7      0   100%
 books\async_views.py              19      0   100%
+books\filters.py                  14      0   100%
 books\forms.py                    26      0   100%
 books\middleware.py                7      0   100%
 books\models.py                   31      0   100%
+books\serializers.py              41      0   100%
 books\signals.py                  10      0   100%
 books\urls.py                      4      0   100%
 books\views.py                    77      0   100%
-config\settings.py                39      0   100%
+config\settings.py                45      0   100%
 config\urls.py                     7      0   100%
 orders\admin.py                   23      0   100%
+orders\api_views.py               82      1    99%   27
 orders\apps.py                     5      0   100%
 orders\async_views.py             15      0   100%
 orders\cart.py                    46      0   100%
 orders\context_processors.py       3      0   100%
+orders\filters.py                  8      0   100%
 orders\forms.py                   12      0   100%
-orders\models.py                  46      0   100%
-orders\services.py                69      0   100%
+orders\models.py                  69      0   100%
+orders\serializers.py            125      0   100%
+orders\services.py                95      1    99%   55
 orders\urls.py                     4      0   100%
-orders\views.py                  132      0   100%
+orders\views.py                  134      0   100%
 ------------------------------------------------------------
-TOTAL                            594      0   100%
+TOTAL                            976      2    99%
 
-4 empty files skipped.
+5 empty files skipped.

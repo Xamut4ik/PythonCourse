@@ -582,3 +582,23 @@ msgstr ""
 #: .\orders\views.py:129
 msgid "Could not proceed to payment. Please try again later."
 msgstr ""
+
+#: .\orders\templates\orders\payment_success.html:6
+msgid "Order cancelled"
+msgstr ""
+
+#: .\orders\templates\orders\payment_success.html:16
+msgid "This order has been cancelled"
+msgstr ""
+
+#: .\orders\templates\orders\payment_success.html:25
+#, python-format
+msgid ""
+"The payment of %(price)s UAH was received after the order had been "
+"cancelled, so it will be refunded."
+msgstr ""
+
+#: .\orders\templates\orders\payment_success.html:28
+#, python-format
+msgid "We will contact you at %(email)s about the refund."
+msgstr ""

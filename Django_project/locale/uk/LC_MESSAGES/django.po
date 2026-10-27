@@ -587,3 +587,25 @@ msgstr "%(order)s вже не очікує оплати."
 #: .\orders\views.py:129
 msgid "Could not proceed to payment. Please try again later."
 msgstr "Не вдалося перейти до оплати. Спробуйте пізніше."
+
+#: .\orders\templates\orders\payment_success.html:6
+msgid "Order cancelled"
+msgstr "Замовлення скасовано"
+
+#: .\orders\templates\orders\payment_success.html:16
+msgid "This order has been cancelled"
+msgstr "Це замовлення скасовано"
+
+#: .\orders\templates\orders\payment_success.html:25
+#, python-format
+msgid ""
+"The payment of %(price)s UAH was received after the order had been "
+"cancelled, so it will be refunded."
+msgstr ""
+"Оплата %(price)s грн надійшла після скасування замовлення, тому кошти буде "
+"повернуто."
+
+#: .\orders\templates\orders\payment_success.html:28
+#, python-format
+msgid "We will contact you at %(email)s about the refund."
+msgstr "Щодо повернення коштів ми зв'яжемося з вами за адресою %(email)s."

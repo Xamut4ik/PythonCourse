@@ -212,7 +212,8 @@ class PaymentSuccess(TemplateView):
         session_id: id Stripe Checkout Session.
 
     Перевіряє сесію через Stripe API, позначає замовлення оплаченим (якщо
-    ``payment_status == 'paid'``) і показує ``orders/payment_success.html`` з ``order``.
+    ``payment_status == 'paid'``) і показує ``orders/payment_success.html`` з ``order``
+    та ``refund_due`` (оплату отримано за вже скасоване замовлення).
     Повертає 404, якщо ``session_id`` відсутній, невідомий Stripe, не містить
     коректного id замовлення або замовлення чуже.
     Права доступу: власник замовлення.
@@ -236,7 +237,9 @@ class PaymentSuccess(TemplateView):
         except (TypeError, ValueError):
             raise Http404
         mark_order_paid(session)
-        context['order'] = get_own_order(self.request, order_id)
+        order = get_own_order(self.request, order_id)
+        context['order'] = order
+        context['refund_due'] = order.status == Order.Status.CANCELLED and getattr(session, 'payment_status', None) == 'paid'
         return context
 
 

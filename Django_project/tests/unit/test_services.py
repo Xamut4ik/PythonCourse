@@ -48,3 +48,23 @@ def test_mark_order_paid_is_idempotent():
     mark_order_paid(session)
     session['payment_intent'] = 'pi_other'
     assert mark_order_paid(session).stripe_payment_intent == 'pi_1'
+
+
+def test_mark_order_paid_keeps_cancelled_order_cancelled(caplog):
+    order = OrderFactory(status=Order.Status.CANCELLED)
+    session = {'id': 'cs_late', 'payment_status': 'paid', 'client_reference_id': str(order.pk), 'payment_intent': 'pi_late'}
+    result = mark_order_paid(session)
+    order.refresh_from_db()
+    assert result == order
+    assert order.status == Order.Status.CANCELLED
+    assert order.stripe_session_id == 'cs_late'
+    assert order.stripe_payment_intent == 'pi_late'
+    assert f'#{order.pk}' in caplog.text and 'pi_late' in caplog.text
+
+
+def test_late_payment_for_cancelled_order_is_logged_once(caplog):
+    order = OrderFactory(status=Order.Status.CANCELLED)
+    session = {'id': 'cs_late', 'payment_status': 'paid', 'client_reference_id': str(order.pk), 'payment_intent': 'pi_late'}
+    mark_order_paid(session)
+    mark_order_paid(session)
+    assert [r.levelname for r in caplog.records if 'pi_late' in r.getMessage()] == ['ERROR']
