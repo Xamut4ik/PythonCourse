@@ -3,6 +3,7 @@ from django.db.models import Count, Sum
 from django.http import JsonResponse
 from django.shortcuts import aget_object_or_404, render
 
+from .cache import get_catalog_version
 from .models import Book, Category
 
 arender = sync_to_async(render)
@@ -21,10 +22,7 @@ async def catalog_stats(request):
         'categories_count': await Category.objects.acount(),
         'out_of_stock_count': await Book.objects.filter(stock__lte=0).acount(),
         'total_stock': totals['total_stock'] or 0,
-        'categories': [
-            category
-            async for category in Category.objects.annotate(book_count=Count('book')).order_by('name')
-        ],
+        'categories': Category.objects.annotate(book_count=Count('book')).order_by('name'),
     }
     return await arender(request, 'books/catalog_stats.html', context)
 
@@ -40,8 +38,9 @@ async def category_books(request, slug):
     або 404, якщо категорії немає. Права доступу: доступно всім.
     """
     category = await aget_object_or_404(Category, slug=slug)
-    books = [book async for book in Book.objects.filter(category=category).order_by('title')]
-    return await arender(request, 'books/category_books.html', {'category': category, 'books': books})
+    books = Book.objects.filter(category=category).order_by('title')
+    context = {'category': category, 'books': books, 'catalog_version': await sync_to_async(get_catalog_version)()}
+    return await arender(request, 'books/category_books.html', context)
 
 
 async def book_api(request, pk):

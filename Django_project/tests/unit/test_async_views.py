@@ -44,7 +44,7 @@ def test_category_books(client, category, book):
     response = client.get(reverse('books:category', args=[category.slug]))
     assert response.status_code == 200
     assert response.context['category'] == category
-    assert response.context['books'] == [book]
+    assert list(response.context['books']) == [book]
 
 
 @pytest.mark.django_db

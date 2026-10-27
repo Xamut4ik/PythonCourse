@@ -1,5 +1,5 @@
 {% extends 'books/base.html' %}
-{% load i18n %}
+{% load i18n cache %}
 
 {% block title %}
     {% translate "Book list" %}
@@ -14,15 +14,18 @@
         <button type="submit">{% translate "Search" %}</button>
     </form>
 
-    {% for book in books %}
-        <div>
-            <a href="{% url 'books:detail' book.pk %}">
-                {{ book.title }}
-            </a>
-        </div>
-    {% empty %}
-        <p>{% translate "No books found." %}</p>
-    {% endfor %}
+    {% get_current_language as LANGUAGE_CODE %}
+    {% cache 300 book_list catalog_version LANGUAGE_CODE query page_obj.number %}
+        {% for book in books %}
+            <div>
+                <a href="{% url 'books:detail' book.pk %}">
+                    {{ book.title }}
+                </a>
+            </div>
+        {% empty %}
+            <p>{% translate "No books found." %}</p>
+        {% endfor %}
+    {% endcache %}
 
     {% if is_paginated %}
         <div class="mt-3">

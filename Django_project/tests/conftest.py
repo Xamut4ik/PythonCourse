@@ -3,6 +3,7 @@ from unittest import mock
 
 import pytest
 from django.contrib.sessions.backends.db import SessionStore
+from django.core.cache import caches
 from django.urls import reverse
 from django.utils import translation
 
@@ -17,6 +18,15 @@ ORDER_DATA = {
 }
 
 BOOK_PERMISSIONS = ['add_book', 'change_book', 'delete_book']
+
+
+@pytest.fixture(autouse=True)
+def clear_caches():
+    for cache in caches.all():
+        cache.clear()
+    yield
+    for cache in caches.all():
+        cache.clear()
 
 
 @pytest.fixture(autouse=True)

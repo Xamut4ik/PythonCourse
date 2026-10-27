@@ -22,7 +22,7 @@ def test_create_order_from_empty_cart_raises(session_request, order_data):
 
 def test_email_failure_is_logged_not_raised(mocker, caplog):
     order = OrderItemFactory().order
-    mocker.patch('orders.services.send_mail', side_effect=SMTPException('smtp down'))
+    mocker.patch('orders.emails.send_mail', side_effect=SMTPException('smtp down'))
 
     send_order_created_email(order.pk)
 

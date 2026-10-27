@@ -1,16 +1,8 @@
 import pytest
-from django.core.cache import cache
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from tests.factories import UserFactory
-
-
-@pytest.fixture(autouse=True)
-def clear_throttle_cache():
-    cache.clear()
-    yield
-    cache.clear()
 
 
 @pytest.fixture

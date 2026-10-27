@@ -75,3 +75,12 @@ def test_cors_allows_local_frontend(api_client):
 def test_cors_rejects_unknown_origin(api_client):
     response = api_client.get('/api/books/', HTTP_ORIGIN='http://evil.example.com')
     assert 'Access-Control-Allow-Origin' not in response
+
+
+def test_spoofed_forwarded_for_does_not_bypass_throttling(api_client, mocker):
+    mocker.patch.object(AnonRateThrottle, 'THROTTLE_RATES', {'anon': '2/minute'})
+    statuses = [
+        api_client.get('/api/books/', HTTP_X_FORWARDED_FOR=f'10.0.0.{n}, 172.18.0.1').status_code
+        for n in range(3)
+    ]
+    assert statuses == [200, 200, 429]

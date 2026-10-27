@@ -8,6 +8,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext as _
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
+from .cache import get_catalog_version
 from .forms import BookForm, CustomUserCreationForm
 from .models import Book
 
@@ -47,6 +48,7 @@ class ListBooks(ListView):
         """Додає до контексту поточний рядок пошуку ``query`` для форми."""
         context = super().get_context_data(**kwargs)
         context['query'] = self.get_search_query()
+        context['catalog_version'] = get_catalog_version()
         return context
 
 

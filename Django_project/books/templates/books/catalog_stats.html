@@ -1,5 +1,5 @@
 {% extends 'books/base.html' %}
-{% load i18n %}
+{% load i18n cache %}
 
 {% block title %}
     {% translate "Catalog statistics" %}
@@ -38,6 +38,8 @@
 
 <h2 class="h4 mt-5">{% translate "Categories" %}</h2>
 
+{% get_current_language as LANGUAGE_CODE %}
+{% cache 600 catalog_categories LANGUAGE_CODE %}
 <ul class="list-group mt-3">
     {% for category in categories %}
         <li class="list-group-item d-flex justify-content-between">
@@ -50,5 +52,6 @@
         <li class="list-group-item">{% translate "No categories yet." %}</li>
     {% endfor %}
 </ul>
+{% endcache %}
 
 {% endblock %}

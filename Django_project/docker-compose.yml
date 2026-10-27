@@ -1,16 +1,27 @@
+x-app: &app
+  build: .
+  image: bookstore-app
+  env_file:
+    - .env
+  environment:
+    DB_HOST: ${DB_HOST:-db}
+    REDIS_URL: ${REDIS_URL:-redis://redis:6379/1}
+    CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+    CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/2}
+  volumes:
+    - media_volume:/app/media
+  restart: unless-stopped
 
 services:
   web:
-    build: .
+    <<: *app
     container_name: django_web
-    env_file:
-      - .env
-    environment:
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379/1}
-    ports:
-      - "8000:8000"
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers ${GUNICORN_WORKERS:-3} --access-logfile -
+    expose:
+      - "8000"
     volumes:
       - static_volume:/app/staticfiles
+      - media_volume:/app/media
     depends_on:
       db:
         condition: service_healthy
@@ -28,6 +39,42 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+
+  celery:
+    <<: *app
+    command: celery -A config worker --loglevel=info --concurrency=${CELERY_CONCURRENCY:-2}
+    volumes:
+      - media_volume:/app/media
+      - reports_volume:/app/reports
+    depends_on:
+      web:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery-beat:
+    <<: *app
+    command: celery -A config beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes: []
+    depends_on:
+      web:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    env_file:
+      - .env
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles:ro
+      - media_volume:/app/media:ro
+    depends_on:
+      web:
+        condition: service_healthy
     restart: unless-stopped
 
   db:
@@ -53,6 +100,8 @@ services:
 
   redis:
     image: redis:7-alpine
+    env_file:
+      - .env
     volumes:
       - redis_data:/data
     healthcheck:
@@ -66,3 +115,5 @@ volumes:
   postgres_data:
   redis_data:
   static_volume:
+  media_volume:
+  reports_volume:

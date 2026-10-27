@@ -2,14 +2,16 @@ import logging
 
 import stripe
 from django.conf import settings
-from django.core.mail import send_mail
 from django.db import transaction
-from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils import translation
 from django.utils.translation import gettext as _
+from kombu.exceptions import OperationalError
 
 from books.models import Book
+from .emails import deliver_order_created_email
 from .models import Order, OrderItem
+from .tasks import send_order_confirmation_email
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +31,7 @@ def create_order_from_cart(cart, form, user=None):
             order.user = user
         order.save()
         _add_order_items(order, [(item['book'].id, item['quantity']) for item in cart_items])
-        transaction.on_commit(lambda: send_order_created_email(order.id))
+        transaction.on_commit(lambda: queue_order_created_email(order.id))
 
     return order
 
@@ -41,7 +43,7 @@ def create_order(user, contact_data, items):
     with transaction.atomic():
         order = Order.objects.create(user=user, **contact_data)
         _add_order_items(order, items)
-        transaction.on_commit(lambda: send_order_created_email(order.id))
+        transaction.on_commit(lambda: queue_order_created_email(order.id))
 
     return order
 
@@ -75,19 +77,20 @@ def restore_order_stock(order):
 
 
 def send_order_created_email(order_id):
-    order = Order.objects.prefetch_related('items__book').get(pk=order_id)
-    message = render_to_string('orders/emails/order_created.txt', {'order': order})
     try:
-        send_mail(
-            subject=_('Order #%(id)s created') % {'id': order.id},
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[order.email],
-        )
+        deliver_order_created_email(order_id)
     except Exception:
-        logger.exception('Не вдалося надіслати email для замовлення #%s', order.id)
-    else:
-        logger.info('Email про замовлення #%s надіслано на %s', order.id, order.email)
+        logger.exception('Не вдалося надіслати email для замовлення #%s', order_id)
+
+
+def queue_order_created_email(order_id):
+    language = translation.get_language()
+    try:
+        send_order_confirmation_email.delay(order_id, language)
+    except OperationalError:
+        logger.exception('Celery недоступний, email для замовлення #%s надсилається синхронно', order_id)
+        with translation.override(language):
+            send_order_created_email(order_id)
 
 
 def create_checkout_session(order, request):

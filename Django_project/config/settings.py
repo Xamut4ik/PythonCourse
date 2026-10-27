@@ -13,7 +13,12 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+import sentry_sdk
+from celery.schedules import crontab
 from django.utils.translation import gettext_lazy as _
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -51,6 +56,7 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_spectacular',
     'corsheaders',
+    'django_celery_beat',
     'books',
     'orders',
     'debug_toolbar',
@@ -187,20 +193,60 @@ LOGGING = {
 }
 
 
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = Path(os.environ.get("STATIC_ROOT", BASE_DIR / "staticfiles"))
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", BASE_DIR / "media"))
+REPORTS_ROOT = Path(os.environ.get("REPORTS_ROOT", BASE_DIR / "reports"))
+
+USE_X_FORWARDED_HOST = os.environ.get("USE_X_FORWARDED_HOST", "True").lower() == "true"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 REDIS_URL = os.environ.get("REDIS_URL", "")
+CACHE_TIMEOUT = int(os.environ.get("CACHE_TIMEOUT", "300"))
+CACHE_KEY_PREFIX = os.environ.get("CACHE_KEY_PREFIX", "bookstore")
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+
+def redis_cache(key_prefix):
+    return {
+        "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": REDIS_URL,
+        "KEY_PREFIX": key_prefix,
+        "TIMEOUT": CACHE_TIMEOUT,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "SOCKET_CONNECT_TIMEOUT": 2,
+            "SOCKET_TIMEOUT": 2,
+            "IGNORE_EXCEPTIONS": True,
+        },
+    }
+
+
+def locmem_cache(location):
+    return {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": location,
+        "KEY_PREFIX": CACHE_KEY_PREFIX,
+        "TIMEOUT": CACHE_TIMEOUT,
+    }
+
+
+CACHES = (
+    {
+        "default": redis_cache(CACHE_KEY_PREFIX),
+        "pages": redis_cache(f"{CACHE_KEY_PREFIX}-pages"),
     }
     if REDIS_URL
     else {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "default": locmem_cache("default"),
+        "pages": locmem_cache("pages"),
     }
-}
+)
 
 
 CART_SESSION_ID = 'cart'
@@ -250,6 +296,7 @@ REST_FRAMEWORK = {
         "anon": os.environ.get("API_THROTTLE_ANON", "100/hour"),
         "user": os.environ.get("API_THROTTLE_USER", "1000/hour"),
     },
+    "NUM_PROXIES": int(os.environ.get("API_NUM_PROXIES", "1")),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
@@ -279,3 +326,44 @@ CORS_ALLOWED_ORIGINS = [
     ).split(",")
     if origin.strip()
 ]
+
+
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", CELERY_BROKER_URL)
+CELERY_TASK_ALWAYS_EAGER = os.environ.get("CELERY_TASK_ALWAYS_EAGER", "False").lower() == "true"
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_RESULT_EXPIRES = timedelta(days=1)
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TIME_LIMIT = 300
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BEAT_SCHEDULE = {
+    "clear-expired-sessions": {
+        "task": "orders.tasks.clear_expired_sessions",
+        "schedule": crontab(hour=3, minute=0),
+    },
+    "daily-sales-report": {
+        "task": "orders.tasks.generate_sales_report",
+        "schedule": crontab(hour=6, minute=0),
+    },
+}
+
+SALES_REPORT_RECIPIENTS = [
+    email.strip()
+    for email in os.environ.get("SALES_REPORT_RECIPIENTS", "").split(",")
+    if email.strip()
+]
+
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration(), CeleryIntegration(), RedisIntegration()],
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "production"),
+        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.0")),
+        send_default_pii=False,
+    )

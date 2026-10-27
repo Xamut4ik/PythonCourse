@@ -1,5 +1,5 @@
 {% extends 'books/base.html' %}
-{% load i18n %}
+{% load i18n cache %}
 
 {% block title %}
     {{ book.title }}
@@ -13,6 +13,8 @@
 
     <div class="card-body">
 
+        {% get_current_language as LANGUAGE_CODE %}
+        {% cache 600 book_detail book.pk LANGUAGE_CODE %}
         <p>
             <strong>{% translate "Author" %}:</strong>
             {{ book.author }}
@@ -37,6 +39,7 @@
             <strong>{% translate "Description" %}:</strong>
             {{ book.description }}
         </p>
+        {% endcache %}
 
         {% if book.stock > 0 %}
             <form action="{% url 'orders:cart_add' book.pk %}"

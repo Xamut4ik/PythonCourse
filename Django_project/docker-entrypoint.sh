@@ -25,11 +25,13 @@ while True:
         time.sleep(2)
 PY
 
-echo "Applying database migrations..."
-python manage.py migrate --noinput
+if [ "$1" = "gunicorn" ]; then
+    echo "Applying database migrations..."
+    python manage.py migrate --noinput
 
-echo "Collecting static files..."
-python manage.py collectstatic --noinput
+    echo "Collecting static files..."
+    python manage.py collectstatic --noinput
+fi
 
-echo "Starting Django..."
+echo "Starting: $*"
 exec "$@"
