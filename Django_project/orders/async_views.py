@@ -5,6 +5,16 @@ from .views import SESSION_ORDER_IDS
 
 
 async def order_status(request, pk):
+    """JSON-статус замовлення.
+
+    Args:
+        request: HttpRequest.
+        pk: первинний ключ замовлення.
+
+    Повертає JsonResponse з ``id``, ``status``, ``status_display``, ``is_paid``,
+    ``total`` і ``items`` або 404, якщо замовлення не існує чи чуже.
+    Права доступу: власник замовлення (за сесією або користувачем).
+    """
     try:
         order = await Order.objects.aget(pk=pk)
     except Order.DoesNotExist:

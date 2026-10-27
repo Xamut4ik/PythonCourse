@@ -9,6 +9,12 @@ arender = sync_to_async(render)
 
 
 async def catalog_stats(request):
+    """Асинхронна статистика каталогу.
+
+    Повертає HTML-сторінку ``books/catalog_stats.html`` з кількістю книг, категорій,
+    книг без залишку, сумарним залишком і списком категорій з ``book_count``.
+    Права доступу: доступно всім.
+    """
     totals = await Book.objects.aaggregate(total_stock=Sum('stock'))
     context = {
         'books_count': await Book.objects.acount(),
@@ -24,12 +30,31 @@ async def catalog_stats(request):
 
 
 async def category_books(request, slug):
+    """Асинхронний список книг категорії.
+
+    Args:
+        request: HttpRequest.
+        slug: slug категорії.
+
+    Повертає HTML-сторінку ``books/category_books.html`` з ``category`` і ``books``
+    або 404, якщо категорії немає. Права доступу: доступно всім.
+    """
     category = await aget_object_or_404(Category, slug=slug)
     books = [book async for book in Book.objects.filter(category=category).order_by('title')]
     return await arender(request, 'books/category_books.html', {'category': category, 'books': books})
 
 
 async def book_api(request, pk):
+    """JSON-ендпоінт з даними книги.
+
+    Args:
+        request: HttpRequest.
+        pk: первинний ключ книги.
+
+    Повертає JsonResponse з ``id``, ``title``, ``author``, ``price``, ``stock``,
+    ``in_stock``, ``category`` або ``{"error": "not found"}`` зі статусом 404.
+    Права доступу: доступно всім.
+    """
     book = await Book.objects.select_related('category').filter(pk=pk).afirst()
     if book is None:
         return JsonResponse({'error': 'not found'}, status=404)

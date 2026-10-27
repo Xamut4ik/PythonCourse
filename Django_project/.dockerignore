@@ -7,3 +7,6 @@ __pycache__
 db.sqlite3
 staticfiles
 data.json
+*.mo
+htmlcov
+.coverage
